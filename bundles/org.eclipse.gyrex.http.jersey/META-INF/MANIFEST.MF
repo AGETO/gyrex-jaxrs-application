@@ -5,7 +5,12 @@ Bundle-SymbolicName: net.ageto.gyrex.http.jersey
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Eclipse Gyrex
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Import-Package: org.osgi.framework;version="1.3.0"
+Import-Package: com.sun.jersey.api.container.filter;version="[1.12.0,2.0.0)",
+ com.sun.jersey.api.core;version="[1.12.0,2.0.0)",
+ com.sun.jersey.spi.container.servlet;version="[1.12.0,2.0.0)",
+ javax.servlet;version="[2.6.0,3.1.0)",
+ javax.ws.rs.core;version="[1.1.1,2.0.0)",
+ org.osgi.framework;version="[1.3.0,2.0.0)"
 Require-Bundle: org.eclipse.gyrex.common;bundle-version="1.0.0",
  org.eclipse.gyrex.context;bundle-version="1.0.0",
  org.eclipse.gyrex.http;bundle-version="1.0.0",
