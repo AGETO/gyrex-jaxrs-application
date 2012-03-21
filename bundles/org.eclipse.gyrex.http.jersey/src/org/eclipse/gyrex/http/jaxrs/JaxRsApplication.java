@@ -31,6 +31,9 @@ import com.sun.jersey.spi.container.servlet.ServletContainer;
  * override {@link #getJaxRsClasses()} and/or {@link #getJaxRsSingletons()} to
  * provide the resources to te JAX-RS runtime.
  * </p>
+ * <p>
+ * This class may be instantiated or extended by clients.
+ * </p>
  */
 public class JaxRsApplication extends Application {
 
@@ -45,11 +48,65 @@ public class JaxRsApplication extends Application {
 	}
 
 	/**
-	 * Initializes the JAX-RS application and registers it at the configure
+	 * Called by {@link #doInit()} to create the JAX-RS Application object.
+	 * <p>
+	 * The default implementation creates an application object that delegates
+	 * to {@link #getJaxRsClasses()} and {@link #getJaxRsSingletons()}.
+	 * Subclasses may override to provider a more specialized application.
+	 * </p>
+	 * 
+	 * @return the JAX-RS Application object (must not be <code>null</code>)
+	 */
+	protected javax.ws.rs.core.Application createJaxRsApplication() {
+		// delegate discovery to the JaxRsApplication
+		// note, there is an additional trick in Equinox that works here
+		// by providing an anonymous implementation here, the Equinox-TCCL
+		// may find the bundle that extends the class
+		final DefaultResourceConfig resourceConfig = new DefaultResourceConfig() {
+			@Override
+			public Set<Class<?>> getClasses() {
+				final Set<Class<?>> classes = JaxRsApplication.this
+						.getJaxRsClasses();
+				if (null == classes) {
+					return Collections.emptySet();
+				}
+				return classes;
+			}
+
+			@Override
+			public Set<Object> getSingletons() {
+				// TODO: hook exception mapper
+				// TODO: hook injection support
+				final Set<Object> singletons = JaxRsApplication.this
+						.getJaxRsSingletons();
+				if (null == singletons) {
+					return Collections.emptySet();
+				}
+				return singletons;
+			}
+		};
+
+		// TODO - make that extensible
+		resourceConfig.getProperties().put(
+				ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS,
+				LoggingFilter.class.getName());
+		resourceConfig.getProperties().put(
+				ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS,
+				LoggingFilter.class.getName());
+		return resourceConfig;
+	}
+
+	/**
+	 * Initializes the JAX-RS application and registers it at the configured
 	 * {@link #getJaxRsAlias() alias}.
 	 * <p>
 	 * Subclasses may override and perform additional initialization. However,
 	 * they must call super to initialize the JAX-RS runtime.
+	 * </p>
+	 * <p>
+	 * This implementation calls {@link #createJaxRsApplication()} to create the
+	 * JAX-RS Application object that will be used for configuring the JAX-RS
+	 * runtime.
 	 * </p>
 	 * 
 	 * @throws IllegalStateException
@@ -60,36 +117,15 @@ public class JaxRsApplication extends Application {
 	 */
 	@Override
 	protected void doInit() throws IllegalStateException, Exception {
-		// delegate discovery to the JaxRsApplication
-		// note, there is an additional trick in Equinox that works here
-		// by providing an anonymous implementation here, the Equinox-TCCL
-		// may find the bundle that extends the class
-		final DefaultResourceConfig resourceConfig = new DefaultResourceConfig() {
-			@Override
-			public Set<Class<?>> getClasses() {
-				final Set<Class<?>> classes = JaxRsApplication.this.getJaxRsClasses();
-				if (null == classes) {
-					return Collections.emptySet();
-				}
-				return classes;
-			}
-
-			@Override
-			public Set<Object> getSingletons() {
-				final Set<Object> singletons = JaxRsApplication.this.getJaxRsSingletons();
-				if (null == singletons) {
-					return Collections.emptySet();
-				}
-				return singletons;
-			}
-		};
-
-		// TODO - make that extensible
-		resourceConfig.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, LoggingFilter.class.getName());
-		resourceConfig.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, LoggingFilter.class.getName());
+		final javax.ws.rs.core.Application jaxRsApplication = createJaxRsApplication();
+		if (null == jaxRsApplication) {
+			throw new IllegalStateException(
+					"no application returned by createJaxRsApplication");
+		}
 
 		// register
-		getApplicationContext().registerServlet(getJaxRsAlias(), new ServletContainer(resourceConfig), null);
+		getApplicationContext().registerServlet(getJaxRsAlias(),
+				new ServletContainer(jaxRsApplication), null);
 	}
 
 	/**
@@ -120,7 +156,7 @@ public class JaxRsApplication extends Application {
 	 * The default implementation returns an empty set. Subclasses may override.
 	 * </p>
 	 * 
-	 * @return a set of classes
+	 * @return a set of classes (may be <code>null</code>)
 	 * @see javax.ws.rs.core.Application#getClasses()
 	 */
 	protected Set<Class<?>> getJaxRsClasses() {
@@ -139,7 +175,7 @@ public class JaxRsApplication extends Application {
 	 * The default implementation returns an empty set. Subclasses may override.
 	 * </p>
 	 * 
-	 * @return a set of singletons
+	 * @return a set of singletons (may be <code>null</code>)
 	 */
 	protected Set<Object> getJaxRsSingletons() {
 		return Collections.emptySet();
