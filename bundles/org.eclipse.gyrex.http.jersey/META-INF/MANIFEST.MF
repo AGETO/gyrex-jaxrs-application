@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Jersey Integration for Gyrex HTTP Applications
-Bundle-SymbolicName: net.ageto.gyrex.http.jersey
+Bundle-SymbolicName: org.eclipse.gyrex.http.jersey
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Eclipse Gyrex
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
