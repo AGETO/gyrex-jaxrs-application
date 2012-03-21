@@ -16,21 +16,18 @@ import org.eclipse.gyrex.http.jaxrs.JaxRsApplication;
 
 import org.osgi.framework.Bundle;
 
-import com.sun.jersey.api.core.ScanningResourceConfig;
+import com.sun.jersey.api.core.ResourceConfig;
 
 public final class ScanningJaxRsApplication extends JaxRsApplication {
 
-	private final ScanningResourceConfig resourceConfig;
+	private final ResourceConfig resourceConfig;
 
-	public ScanningJaxRsApplication(final String id,
-			final IRuntimeContext context, final Bundle bundle) {
+	public ScanningJaxRsApplication(final String id, final IRuntimeContext context, final Bundle bundle) {
 		super(id, context);
 
 		// create a scanning resource configuration which scans the bundle
-		// for
-		// all possible resources
-		resourceConfig = new ScanningResourceConfig();
-		resourceConfig.init(new BundleScanner(bundle));
+		// for all possible resources
+		resourceConfig = new BundleScanningResourceConfig(bundle);
 	}
 
 	@Override

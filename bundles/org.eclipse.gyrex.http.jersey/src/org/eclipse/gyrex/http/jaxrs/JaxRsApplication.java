@@ -65,11 +65,8 @@ public class JaxRsApplication extends Application {
 		final DefaultResourceConfig resourceConfig = new DefaultResourceConfig() {
 			@Override
 			public Set<Class<?>> getClasses() {
-				final Set<Class<?>> classes = JaxRsApplication.this
-						.getJaxRsClasses();
-				if (null == classes) {
-					return Collections.emptySet();
-				}
+				final Set<Class<?>> classes = JaxRsApplication.this.getJaxRsClasses();
+				if (null == classes) return Collections.emptySet();
 				return classes;
 			}
 
@@ -77,22 +74,15 @@ public class JaxRsApplication extends Application {
 			public Set<Object> getSingletons() {
 				// TODO: hook exception mapper
 				// TODO: hook injection support
-				final Set<Object> singletons = JaxRsApplication.this
-						.getJaxRsSingletons();
-				if (null == singletons) {
-					return Collections.emptySet();
-				}
+				final Set<Object> singletons = JaxRsApplication.this.getJaxRsSingletons();
+				if (null == singletons) return Collections.emptySet();
 				return singletons;
 			}
 		};
 
 		// TODO - make that extensible
-		resourceConfig.getProperties().put(
-				ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS,
-				LoggingFilter.class.getName());
-		resourceConfig.getProperties().put(
-				ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS,
-				LoggingFilter.class.getName());
+		resourceConfig.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, LoggingFilter.class.getName());
+		resourceConfig.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, LoggingFilter.class.getName());
 		return resourceConfig;
 	}
 
@@ -118,14 +108,10 @@ public class JaxRsApplication extends Application {
 	@Override
 	protected void doInit() throws IllegalStateException, Exception {
 		final javax.ws.rs.core.Application jaxRsApplication = createJaxRsApplication();
-		if (null == jaxRsApplication) {
-			throw new IllegalStateException(
-					"no application returned by createJaxRsApplication");
-		}
+		if (null == jaxRsApplication) throw new IllegalStateException("no application returned by createJaxRsApplication");
 
 		// register
-		getApplicationContext().registerServlet(getJaxRsAlias(),
-				new ServletContainer(jaxRsApplication), null);
+		getApplicationContext().registerServlet(getJaxRsAlias(), new ServletContainer(jaxRsApplication), null);
 	}
 
 	/**

@@ -22,6 +22,9 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentConstants;
 import org.osgi.service.component.ComponentContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * OSGi Declarative Service component class for providing
  * {@link JaxRsApplication JAX-RS applications} in Gyrex.
@@ -61,6 +64,8 @@ import org.osgi.service.component.ComponentContext;
  */
 public class JaxRsApplicationProviderComponent extends ApplicationProvider {
 
+	private static final Logger LOG = LoggerFactory.getLogger(JaxRsApplicationProviderComponent.class);
+
 	/**
 	 * A component property for a component configuration that contains the
 	 * {@link ApplicationProvider#getId() application provider id} which shall
@@ -74,18 +79,15 @@ public class JaxRsApplicationProviderComponent extends ApplicationProvider {
 	private BundleContext bundleContext;
 
 	public void activate(final ComponentContext context) {
+		if (LOG.isDebugEnabled()) LOG.debug("JaxRsApplicationProviderComponent activation triggered for component '{}' (bundle {})", context.getProperties().get(ComponentConstants.COMPONENT_NAME), context.getBundleContext().getBundle());
+
 		// initialize application id
 		final String applicationProviderId = getApplicationProviderId(context);
 		try {
 			setId(applicationProviderId);
 		} catch (final IllegalStateException e) {
 			// compare and only continue if match
-			if (!applicationProviderId.equals(getId())) {
-				throw new IllegalStateException(
-						String.format(
-								"The JaxRsApplicationProviderComponent has already been initialized with an application provider id (%s) and cannot be initialized again with a different id (%s). Please check your component configuration!",
-								getId(), applicationProviderId), e);
-			}
+			if (!applicationProviderId.equals(getId())) throw new IllegalStateException(String.format("The JaxRsApplicationProviderComponent has already been initialized with an application provider id (%s) and cannot be initialized again with a different id (%s). Please check your component configuration!", getId(), applicationProviderId), e);
 		}
 
 		// remember bundle for later use
@@ -93,11 +95,9 @@ public class JaxRsApplicationProviderComponent extends ApplicationProvider {
 	}
 
 	@Override
-	public Application createApplication(final String applicationId,
-			final IRuntimeContext context) throws CoreException {
+	public Application createApplication(final String applicationId, final IRuntimeContext context) throws CoreException {
 		// return an application that scan the bundle
-		return new ScanningJaxRsApplication(applicationId, context,
-				bundleContext.getBundle());
+		return new ScanningJaxRsApplication(applicationId, context, bundleContext.getBundle());
 	}
 
 	public void deactivate(final ComponentContext context) {
@@ -105,20 +105,13 @@ public class JaxRsApplicationProviderComponent extends ApplicationProvider {
 	}
 
 	private String getApplicationProviderId(final ComponentContext context) {
-		final Object applicationProviderIdValue = context.getProperties().get(
-				APPLICATION_PROVIDER_ID);
+		final Object applicationProviderIdValue = context.getProperties().get(APPLICATION_PROVIDER_ID);
 
-		if (null == applicationProviderIdValue) {
-			// fallback to component name
-			return (String) context.getProperties().get(
-					ComponentConstants.COMPONENT_NAME);
-		}
+		if (null == applicationProviderIdValue) // fallback to component name
+		    return (String) context.getProperties().get(ComponentConstants.COMPONENT_NAME);
 
-		if (!(applicationProviderIdValue instanceof String)) {
-			// give up on invalid type
-			throw new IllegalStateException(
-					"The JaxRsApplicationProviderComponent property 'applicationProviderId' must be of type String!");
-		}
+		if (!(applicationProviderIdValue instanceof String)) // give up on invalid type
+		    throw new IllegalStateException("The JaxRsApplicationProviderComponent property 'applicationProviderId' must be of type String!");
 		return (String) applicationProviderIdValue;
 	}
 
