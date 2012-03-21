@@ -79,7 +79,8 @@ public class JaxRsApplicationProviderComponent extends ApplicationProvider {
 	private BundleContext bundleContext;
 
 	public void activate(final ComponentContext context) {
-		if (LOG.isDebugEnabled()) LOG.debug("JaxRsApplicationProviderComponent activation triggered for component '{}' (bundle {})", context.getProperties().get(ComponentConstants.COMPONENT_NAME), context.getBundleContext().getBundle());
+		if (LOG.isDebugEnabled())
+			LOG.debug("JaxRsApplicationProviderComponent activation triggered for component '{}' (bundle {})", context.getProperties().get(ComponentConstants.COMPONENT_NAME), context.getBundleContext().getBundle());
 
 		// initialize application id
 		final String applicationProviderId = getApplicationProviderId(context);
@@ -87,7 +88,8 @@ public class JaxRsApplicationProviderComponent extends ApplicationProvider {
 			setId(applicationProviderId);
 		} catch (final IllegalStateException e) {
 			// compare and only continue if match
-			if (!applicationProviderId.equals(getId())) throw new IllegalStateException(String.format("The JaxRsApplicationProviderComponent has already been initialized with an application provider id (%s) and cannot be initialized again with a different id (%s). Please check your component configuration!", getId(), applicationProviderId), e);
+			if (!applicationProviderId.equals(getId()))
+				throw new IllegalStateException(String.format("The JaxRsApplicationProviderComponent has already been initialized with an application provider id (%s) and cannot be initialized again with a different id (%s). Please check your component configuration!", getId(), applicationProviderId), e);
 		}
 
 		// remember bundle for later use
@@ -108,10 +110,10 @@ public class JaxRsApplicationProviderComponent extends ApplicationProvider {
 		final Object applicationProviderIdValue = context.getProperties().get(APPLICATION_PROVIDER_ID);
 
 		if (null == applicationProviderIdValue) // fallback to component name
-		    return (String) context.getProperties().get(ComponentConstants.COMPONENT_NAME);
+			return (String) context.getProperties().get(ComponentConstants.COMPONENT_NAME);
 
 		if (!(applicationProviderIdValue instanceof String)) // give up on invalid type
-		    throw new IllegalStateException("The JaxRsApplicationProviderComponent property 'applicationProviderId' must be of type String!");
+			throw new IllegalStateException("The JaxRsApplicationProviderComponent property 'applicationProviderId' must be of type String!");
 		return (String) applicationProviderIdValue;
 	}
 

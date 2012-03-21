@@ -66,7 +66,8 @@ public class JaxRsApplication extends Application {
 			@Override
 			public Set<Class<?>> getClasses() {
 				final Set<Class<?>> classes = JaxRsApplication.this.getJaxRsClasses();
-				if (null == classes) return Collections.emptySet();
+				if (null == classes)
+					return Collections.emptySet();
 				return classes;
 			}
 
@@ -75,7 +76,8 @@ public class JaxRsApplication extends Application {
 				// TODO: hook exception mapper
 				// TODO: hook injection support
 				final Set<Object> singletons = JaxRsApplication.this.getJaxRsSingletons();
-				if (null == singletons) return Collections.emptySet();
+				if (null == singletons)
+					return Collections.emptySet();
 				return singletons;
 			}
 		};
@@ -108,7 +110,8 @@ public class JaxRsApplication extends Application {
 	@Override
 	protected void doInit() throws IllegalStateException, Exception {
 		final javax.ws.rs.core.Application jaxRsApplication = createJaxRsApplication();
-		if (null == jaxRsApplication) throw new IllegalStateException("no application returned by createJaxRsApplication");
+		if (null == jaxRsApplication)
+			throw new IllegalStateException("no application returned by createJaxRsApplication");
 
 		// register
 		getApplicationContext().registerServlet(getJaxRsAlias(), new ServletContainer(jaxRsApplication), null);

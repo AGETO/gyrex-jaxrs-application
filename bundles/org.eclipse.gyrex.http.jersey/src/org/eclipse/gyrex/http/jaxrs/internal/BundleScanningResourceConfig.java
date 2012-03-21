@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.core.spi.scanning.ScannerException;
 import com.sun.jersey.spi.container.ReloadListener;
-import com.sun.jersey.spi.scanning.AnnotationScannerListener;
 import com.sun.jersey.spi.scanning.PathProviderScannerListener;
 
 /**
@@ -54,18 +53,23 @@ public class BundleScanningResourceConfig extends DefaultResourceConfig implemen
 
 	private void scan() {
 		final BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
-		if (null == bundleWiring) throw new ScannerException(String.format("No wiring available for bundle '%s'", bundle));
+		if (null == bundleWiring)
+			throw new ScannerException(String.format("No wiring available for bundle '%s'", bundle));
 
 		final ClassLoader loader = bundleWiring.getClassLoader();
-		if (null == loader) throw new ScannerException(String.format("No class loader available for bundle '%s'", bundle));
+		if (null == loader)
+			throw new ScannerException(String.format("No class loader available for bundle '%s'", bundle));
 
-		final AnnotationScannerListener annotationScannerListener = new PathProviderScannerListener(loader);
-		new BundleScanner(bundle, bundleWiring, loader).scan(annotationScannerListener);
+		final PathProviderScannerListener scannerListener = new PathProviderScannerListener(loader);
+		new BundleScanner(bundle, bundleWiring, loader).scan(scannerListener);
 
-		final Set<Class<?>> annotatedClasses = annotationScannerListener.getAnnotatedClasses();
+		final Set<Class<?>> annotatedClasses = scannerListener.getAnnotatedClasses();
 		for (final Class<?> annotatedClass : annotatedClasses) {
-			if (LOG.isDebugEnabled()) if (annotatedClass.isAnnotationPresent(Path.class)) LOG.debug("Found resource: {}", annotatedClass.getName());
-			else if (annotatedClass.isAnnotationPresent(Provider.class)) LOG.debug("Found provider: {}", annotatedClass.getName());
+			if (LOG.isDebugEnabled())
+				if (annotatedClass.isAnnotationPresent(Path.class))
+					LOG.debug("Found resource: {}", annotatedClass.getName());
+				else if (annotatedClass.isAnnotationPresent(Provider.class))
+					LOG.debug("Found provider: {}", annotatedClass.getName());
 			getClasses().add(annotatedClass);
 		}
 	}
