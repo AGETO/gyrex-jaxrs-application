@@ -41,6 +41,23 @@ import org.osgi.service.component.ComponentContext;
  * {@link #APPLICATION_PROVIDER_ID} (value String) with a unique id identifying
  * the JAX-RS application provider.
  * </p>
+ * <p>
+ * The component definition XML can be as simple as the following XML. However,
+ * the <code>activate</code> and <code>deactivate</code> attributes <strong>must
+ * be set</strong> as specified below as well as the <code>provide</code>
+ * element.
+ * 
+ * <pre>
+ * &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ * &lt;scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" deactivate="deactivate" name="hello.jaxrs"&gt;
+ *    &lt;implementation class="org.eclipse.gyrex.http.jaxrs.JaxRsApplicationProviderComponent"/&gt;
+ *    &lt;service&gt;
+ *       &lt;provide interface="org.eclipse.gyrex.http.application.provider.ApplicationProvider"/&gt;
+ *    &lt;/service&gt;
+ * &lt;/scr:component&gt;
+ * </pre>
+ * 
+ * </p>
  */
 public class JaxRsApplicationProviderComponent extends ApplicationProvider {
 
