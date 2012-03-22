@@ -9,7 +9,7 @@
  * Contributors:
  *     Gunnar Wagenknecht - initial API and implementation
  */
-package org.eclipse.gyrex.http.jaxrs.internal;
+package org.eclipse.gyrex.http.jaxrs.internal.injectors;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -34,7 +34,7 @@ import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.InjectableProvider;
 
 /**
- * A simple provider which injects and OSGi service.
+ * {@link Context} injector for OSGi services.
  */
 @Provider
 public class ServiceInjectableProvider implements InjectableProvider<Context, Type> {

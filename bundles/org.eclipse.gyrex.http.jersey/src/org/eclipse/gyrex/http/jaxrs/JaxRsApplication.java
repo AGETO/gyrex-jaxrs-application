@@ -17,6 +17,8 @@ import java.util.Set;
 import org.eclipse.gyrex.context.IRuntimeContext;
 import org.eclipse.gyrex.http.application.Application;
 import org.eclipse.gyrex.http.application.context.IApplicationContext;
+import org.eclipse.gyrex.http.jaxrs.internal.injectors.ApplicationContextInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.internal.injectors.RuntimeContextInjectableProvider;
 
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.core.DefaultResourceConfig;
@@ -70,12 +72,21 @@ public class JaxRsApplication extends Application {
 			resourceConfig.getSingletons().addAll(singletons);
 		}
 
-		// TODO: hook exception mapper
-		// TODO: hook injection support
+		// add more interesting injectors
+		resourceConfig.getSingletons().add(new RuntimeContextInjectableProvider(getContext()));
+		resourceConfig.getSingletons().add(new ApplicationContextInjectableProvider(getApplicationContext()));
 
-		// TODO - make that extensible
-		resourceConfig.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, LoggingFilter.class.getName());
-		resourceConfig.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, LoggingFilter.class.getName());
+		// add init properties
+		resourceConfig.getProperties().putAll(getApplicationContext().getInitProperties());
+
+		// TODO - make that configurable
+		if (!resourceConfig.getProperties().containsKey(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS)) {
+			resourceConfig.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, LoggingFilter.class.getName());
+		}
+		if (!resourceConfig.getProperties().containsKey(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS)) {
+			resourceConfig.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, LoggingFilter.class.getName());
+		}
+
 		return resourceConfig;
 	}
 

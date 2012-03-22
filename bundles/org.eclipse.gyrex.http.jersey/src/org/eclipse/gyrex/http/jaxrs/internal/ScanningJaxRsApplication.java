@@ -13,11 +13,20 @@ package org.eclipse.gyrex.http.jaxrs.internal;
 
 import org.eclipse.gyrex.context.IRuntimeContext;
 import org.eclipse.gyrex.http.jaxrs.JaxRsApplication;
+import org.eclipse.gyrex.http.jaxrs.JaxRsApplicationProviderComponent;
+import org.eclipse.gyrex.http.jaxrs.internal.injectors.ApplicationContextInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.internal.injectors.RuntimeContextInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.internal.injectors.ServiceInjectableProvider;
 
 import org.osgi.framework.Bundle;
 
 import com.sun.jersey.api.core.ResourceConfig;
 
+/**
+ * Extension of {@link JaxRsApplication} which is used by
+ * {@link JaxRsApplicationProviderComponent} and automatically scans a bundle
+ * for resources.
+ */
 public final class ScanningJaxRsApplication extends JaxRsApplication {
 
 	private final ResourceConfig resourceConfig;
@@ -35,10 +44,16 @@ public final class ScanningJaxRsApplication extends JaxRsApplication {
 
 	@Override
 	protected javax.ws.rs.core.Application createJaxRsApplication() {
+		// add service injector if available
 		if (null != serviceInjector) {
 			resourceConfig.getSingletons().add(serviceInjector);
 		}
 
+		// add more interesting injectors
+		resourceConfig.getSingletons().add(new RuntimeContextInjectableProvider(getContext()));
+		resourceConfig.getSingletons().add(new ApplicationContextInjectableProvider(getApplicationContext()));
+
+		// done
 		return resourceConfig;
 	}
 
