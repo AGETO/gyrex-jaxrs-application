@@ -50,37 +50,28 @@ public class JaxRsApplication extends Application {
 	/**
 	 * Called by {@link #doInit()} to create the JAX-RS Application object.
 	 * <p>
-	 * The default implementation creates an application object that delegates
-	 * to {@link #getJaxRsClasses()} and {@link #getJaxRsSingletons()}.
-	 * Subclasses may override to provider a more specialized application.
+	 * The default implementation creates an application object that is
+	 * populated with classes and singletons returned by
+	 * {@link #getJaxRsClasses()} and {@link #getJaxRsSingletons()}. Subclasses
+	 * may override to provider a more specialized application.
 	 * </p>
 	 * 
 	 * @return the JAX-RS Application object (must not be <code>null</code>)
 	 */
 	protected javax.ws.rs.core.Application createJaxRsApplication() {
-		// delegate discovery to the JaxRsApplication
-		// note, there is an additional trick in Equinox that works here
-		// by providing an anonymous implementation here, the Equinox-TCCL
-		// may find the bundle that extends the class
-		final DefaultResourceConfig resourceConfig = new DefaultResourceConfig() {
-			@Override
-			public Set<Class<?>> getClasses() {
-				final Set<Class<?>> classes = JaxRsApplication.this.getJaxRsClasses();
-				if (null == classes)
-					return Collections.emptySet();
-				return classes;
-			}
+		final DefaultResourceConfig resourceConfig = new DefaultResourceConfig();
 
-			@Override
-			public Set<Object> getSingletons() {
-				// TODO: hook exception mapper
-				// TODO: hook injection support
-				final Set<Object> singletons = JaxRsApplication.this.getJaxRsSingletons();
-				if (null == singletons)
-					return Collections.emptySet();
-				return singletons;
-			}
-		};
+		final Set<Class<?>> classes = getJaxRsClasses();
+		if (null != classes) {
+			resourceConfig.getClasses().addAll(classes);
+		}
+		final Set<Object> singletons = getJaxRsSingletons();
+		if (null != singletons) {
+			resourceConfig.getSingletons().addAll(singletons);
+		}
+
+		// TODO: hook exception mapper
+		// TODO: hook injection support
 
 		// TODO - make that extensible
 		resourceConfig.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, LoggingFilter.class.getName());
@@ -110,8 +101,9 @@ public class JaxRsApplication extends Application {
 	@Override
 	protected void doInit() throws IllegalStateException, Exception {
 		final javax.ws.rs.core.Application jaxRsApplication = createJaxRsApplication();
-		if (null == jaxRsApplication)
+		if (null == jaxRsApplication) {
 			throw new IllegalStateException("no application returned by createJaxRsApplication");
+		}
 
 		// register
 		getApplicationContext().registerServlet(getJaxRsAlias(), new ServletContainer(jaxRsApplication), null);
