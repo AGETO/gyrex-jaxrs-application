@@ -7,9 +7,11 @@ Bundle-Vendor: Eclipse Gyrex
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: com.sun.jersey.api.container.filter;version="[1.12.0,2.0.0)",
  com.sun.jersey.api.core;version="[1.12.0,2.0.0)",
+ com.sun.jersey.core.spi.component;version="1.12.0",
  com.sun.jersey.core.spi.scanning;version="[1.12.0,2.0.0)",
  com.sun.jersey.spi.container;version="[1.12.0,2.0.0)",
  com.sun.jersey.spi.container.servlet;version="[1.12.0,2.0.0)",
+ com.sun.jersey.spi.inject;version="1.12.0",
  com.sun.jersey.spi.scanning;version="1.12.0",
  javax.servlet;version="[2.6.0,3.1.0)",
  javax.ws.rs;version="[1.1.0,2.0.0)",
