@@ -9,21 +9,24 @@
  * Contributors:
  *     Gunnar Wagenknecht - initial API and implementation
  */
-package org.eclipse.gyrex.http.jaxrs.internal.injectors;
+package org.eclipse.gyrex.http.jaxrs.jersey.spi.inject;
 
-import javax.ws.rs.core.Context;
-import javax.ws.rs.ext.Provider;
+import java.lang.annotation.Annotation;
 
 import org.eclipse.gyrex.context.IRuntimeContext;
 
 import com.sun.jersey.spi.inject.SingletonTypeInjectableProvider;
 
 /**
- * {@link Context} Injector for {@link IRuntimeContext}.
+ * Injector for {@link IRuntimeContext}.
+ * <p>
+ * This class may be extended by clients. However, they must be aware that this
+ * code is based on 3rd party code which may have different evolution and
+ * versioning guidelines.
+ * </p>
  */
-@Provider
-public final class RuntimeContextInjectableProvider extends SingletonTypeInjectableProvider<Context, IRuntimeContext> {
-	public RuntimeContextInjectableProvider(final IRuntimeContext instance) {
+public abstract class BaseRuntimeContextInjectableProvider<A extends Annotation> extends SingletonTypeInjectableProvider<A, IRuntimeContext> {
+	public BaseRuntimeContextInjectableProvider(final IRuntimeContext instance) {
 		super(IRuntimeContext.class, instance);
 	}
 }

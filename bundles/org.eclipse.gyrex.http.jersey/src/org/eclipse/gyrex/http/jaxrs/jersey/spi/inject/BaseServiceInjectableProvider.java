@@ -9,15 +9,15 @@
  * Contributors:
  *     Gunnar Wagenknecht - initial API and implementation
  */
-package org.eclipse.gyrex.http.jaxrs.internal.injectors;
+package org.eclipse.gyrex.http.jaxrs.jersey.spi.inject;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 
 import javax.ws.rs.core.Context;
-import javax.ws.rs.ext.Provider;
 
 import org.eclipse.gyrex.common.services.BundleServiceHelper;
 import org.eclipse.gyrex.common.services.IServiceProxy;
@@ -35,11 +35,21 @@ import com.sun.jersey.spi.inject.InjectableProvider;
 
 /**
  * {@link Context} injector for OSGi services.
+ * <p>
+ * Clients must call {@link #dispose()} when this provider when no longer used!
+ * </p>
+ * <p>
+ * This class may be extended by clients. However, they must be aware that this
+ * code is based on 3rd party code which may have different evolution and
+ * versioning guidelines.
+ * </p>
+ * 
+ * @param <A>
+ *            the triggering annotation
  */
-@Provider
-public class ServiceInjectableProvider implements InjectableProvider<Context, Type> {
+public abstract class BaseServiceInjectableProvider<A extends Annotation> implements InjectableProvider<A, Type> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ServiceInjectableProvider.class);
+	private static final Logger LOG = LoggerFactory.getLogger(BaseServiceInjectableProvider.class);
 
 	private final BundleContext bundleContext;
 	private final BundleServiceHelper serviceHelper;
@@ -47,11 +57,14 @@ public class ServiceInjectableProvider implements InjectableProvider<Context, Ty
 	/**
 	 * Creates a new instance.
 	 */
-	public ServiceInjectableProvider(final BundleContext bundleContext) {
+	public BaseServiceInjectableProvider(final BundleContext bundleContext) {
 		this.bundleContext = bundleContext;
 		serviceHelper = new BundleServiceHelper(bundleContext);
 	}
 
+	/**
+	 * Disposes the injector and releases any tracked OSGi service.
+	 */
 	public void dispose() {
 		serviceHelper.dispose();
 	}
@@ -88,7 +101,7 @@ public class ServiceInjectableProvider implements InjectableProvider<Context, Ty
 	}
 
 	@Override
-	public Injectable getInjectable(final ComponentContext componentContext, final Context contextAnnotation, final Type requestedType) {
+	public Injectable getInjectable(final ComponentContext componentContext, final A contextAnnotation, final Type requestedType) {
 		final Class<?> clazz = getClass(requestedType);
 		if (null == clazz) {
 			return null;

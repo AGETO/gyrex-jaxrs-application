@@ -17,8 +17,10 @@ import java.util.Set;
 import org.eclipse.gyrex.context.IRuntimeContext;
 import org.eclipse.gyrex.http.application.Application;
 import org.eclipse.gyrex.http.application.context.IApplicationContext;
-import org.eclipse.gyrex.http.jaxrs.internal.injectors.ApplicationContextInjectableProvider;
-import org.eclipse.gyrex.http.jaxrs.internal.injectors.RuntimeContextInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.ContextApplicationContextInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.ContextRuntimeContextInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.InjectApplicationContextInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.InjectRuntimeContextInjectableProvider;
 
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.core.DefaultResourceConfig;
@@ -73,8 +75,10 @@ public class JaxRsApplication extends Application {
 		}
 
 		// add more interesting injectors
-		resourceConfig.getSingletons().add(new RuntimeContextInjectableProvider(getContext()));
-		resourceConfig.getSingletons().add(new ApplicationContextInjectableProvider(getApplicationContext()));
+		resourceConfig.getSingletons().add(new ContextRuntimeContextInjectableProvider(getContext()));
+		resourceConfig.getSingletons().add(new ContextApplicationContextInjectableProvider(getApplicationContext()));
+		resourceConfig.getSingletons().add(new InjectRuntimeContextInjectableProvider(getContext()));
+		resourceConfig.getSingletons().add(new InjectApplicationContextInjectableProvider(getApplicationContext()));
 
 		// add init properties
 		resourceConfig.getProperties().putAll(getApplicationContext().getInitProperties());

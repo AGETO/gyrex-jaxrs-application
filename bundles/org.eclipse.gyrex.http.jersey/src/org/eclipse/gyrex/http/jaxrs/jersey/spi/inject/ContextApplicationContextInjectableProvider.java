@@ -9,21 +9,22 @@
  * Contributors:
  *     Gunnar Wagenknecht - initial API and implementation
  */
-package org.eclipse.gyrex.http.jaxrs.internal.injectors;
+package org.eclipse.gyrex.http.jaxrs.jersey.spi.inject;
 
 import javax.ws.rs.core.Context;
-import javax.ws.rs.ext.Provider;
 
 import org.eclipse.gyrex.http.application.context.IApplicationContext;
 
-import com.sun.jersey.spi.inject.SingletonTypeInjectableProvider;
-
 /**
  * {@link Context} Injector for {@link IApplicationContext}.
+ * <p>
+ * This class may be instantiated by clients. However, they must be aware that
+ * this code is based on 3rd party code which may have different evolution and
+ * versioning guidelines.
+ * </p>
  */
-@Provider
-public final class ApplicationContextInjectableProvider extends SingletonTypeInjectableProvider<Context, IApplicationContext> {
-	public ApplicationContextInjectableProvider(final IApplicationContext instance) {
-		super(IApplicationContext.class, instance);
+public final class ContextApplicationContextInjectableProvider extends BaseApplicationContextInjectableProvider<Context> {
+	public ContextApplicationContextInjectableProvider(final IApplicationContext instance) {
+		super(instance);
 	}
 }

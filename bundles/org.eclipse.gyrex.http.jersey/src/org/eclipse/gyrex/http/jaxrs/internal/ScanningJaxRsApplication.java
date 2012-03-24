@@ -14,9 +14,12 @@ package org.eclipse.gyrex.http.jaxrs.internal;
 import org.eclipse.gyrex.context.IRuntimeContext;
 import org.eclipse.gyrex.http.jaxrs.JaxRsApplication;
 import org.eclipse.gyrex.http.jaxrs.JaxRsApplicationProviderComponent;
-import org.eclipse.gyrex.http.jaxrs.internal.injectors.ApplicationContextInjectableProvider;
-import org.eclipse.gyrex.http.jaxrs.internal.injectors.RuntimeContextInjectableProvider;
-import org.eclipse.gyrex.http.jaxrs.internal.injectors.ServiceInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.ContextApplicationContextInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.ContextRuntimeContextInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.ContextServiceInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.InjectApplicationContextInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.InjectRuntimeContextInjectableProvider;
+import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.InjectServiceInjectableProvider;
 
 import org.osgi.framework.Bundle;
 
@@ -30,7 +33,8 @@ import com.sun.jersey.api.core.ResourceConfig;
 public final class ScanningJaxRsApplication extends JaxRsApplication {
 
 	private final ResourceConfig resourceConfig;
-	private ServiceInjectableProvider serviceInjector;
+	private ContextServiceInjectableProvider contextServiceInjector;
+	private InjectServiceInjectableProvider injectServiceInjector;
 	private final Bundle bundle;
 
 	public ScanningJaxRsApplication(final String id, final IRuntimeContext context, final Bundle bundle) {
@@ -45,13 +49,18 @@ public final class ScanningJaxRsApplication extends JaxRsApplication {
 	@Override
 	protected javax.ws.rs.core.Application createJaxRsApplication() {
 		// add service injector if available
-		if (null != serviceInjector) {
-			resourceConfig.getSingletons().add(serviceInjector);
+		if (null != contextServiceInjector) {
+			resourceConfig.getSingletons().add(contextServiceInjector);
+		}
+		if (null != injectServiceInjector) {
+			resourceConfig.getSingletons().add(injectServiceInjector);
 		}
 
 		// add more interesting injectors
-		resourceConfig.getSingletons().add(new RuntimeContextInjectableProvider(getContext()));
-		resourceConfig.getSingletons().add(new ApplicationContextInjectableProvider(getApplicationContext()));
+		resourceConfig.getSingletons().add(new ContextRuntimeContextInjectableProvider(getContext()));
+		resourceConfig.getSingletons().add(new InjectRuntimeContextInjectableProvider(getContext()));
+		resourceConfig.getSingletons().add(new ContextApplicationContextInjectableProvider(getApplicationContext()));
+		resourceConfig.getSingletons().add(new InjectApplicationContextInjectableProvider(getApplicationContext()));
 
 		// done
 		return resourceConfig;
@@ -59,16 +68,17 @@ public final class ScanningJaxRsApplication extends JaxRsApplication {
 
 	@Override
 	protected void doDestroy() {
-		if (null != serviceInjector) {
-			serviceInjector.dispose();
-		}
 		try {
 			// call super
 			super.doDestroy();
 		} finally {
-			if (null != serviceInjector) {
-				serviceInjector.dispose();
-				serviceInjector = null;
+			if (null != contextServiceInjector) {
+				contextServiceInjector.dispose();
+				contextServiceInjector = null;
+			}
+			if (null != injectServiceInjector) {
+				injectServiceInjector.dispose();
+				injectServiceInjector = null;
 			}
 		}
 	}
@@ -76,7 +86,8 @@ public final class ScanningJaxRsApplication extends JaxRsApplication {
 	@Override
 	protected void doInit() throws IllegalStateException, Exception {
 		// create service injector
-		serviceInjector = new ServiceInjectableProvider(bundle.getBundleContext());
+		contextServiceInjector = new ContextServiceInjectableProvider(bundle.getBundleContext());
+		injectServiceInjector = new InjectServiceInjectableProvider(bundle.getBundleContext());
 		// call super
 		super.doInit();
 	}
