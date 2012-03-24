@@ -14,6 +14,7 @@ package org.eclipse.gyrex.http.jaxrs;
 import org.eclipse.gyrex.context.IRuntimeContext;
 import org.eclipse.gyrex.http.application.Application;
 import org.eclipse.gyrex.http.application.provider.ApplicationProvider;
+import org.eclipse.gyrex.http.jaxrs.internal.JaxRsDebug;
 import org.eclipse.gyrex.http.jaxrs.internal.ScanningJaxRsApplication;
 
 import org.eclipse.core.runtime.CoreException;
@@ -79,17 +80,22 @@ public class JaxRsApplicationProviderComponent extends ApplicationProvider {
 	private BundleContext bundleContext;
 
 	public void activate(final ComponentContext context) {
-		if (LOG.isDebugEnabled())
+		if (JaxRsDebug.debug) {
 			LOG.debug("JaxRsApplicationProviderComponent activation triggered for component '{}' (bundle {})", context.getProperties().get(ComponentConstants.COMPONENT_NAME), context.getBundleContext().getBundle());
+		}
 
 		// initialize application id
 		final String applicationProviderId = getApplicationProviderId(context);
 		try {
+			if (JaxRsDebug.debug) {
+				LOG.debug("Using application provider id '{}' for component '{}' (bundle {})", new Object[] { applicationProviderId, context.getProperties().get(ComponentConstants.COMPONENT_NAME), context.getBundleContext().getBundle() });
+			}
 			setId(applicationProviderId);
 		} catch (final IllegalStateException e) {
 			// compare and only continue if match
-			if (!applicationProviderId.equals(getId()))
+			if (!applicationProviderId.equals(getId())) {
 				throw new IllegalStateException(String.format("The JaxRsApplicationProviderComponent has already been initialized with an application provider id (%s) and cannot be initialized again with a different id (%s). Please check your component configuration!", getId(), applicationProviderId), e);
+			}
 		}
 
 		// remember bundle for later use
@@ -103,17 +109,22 @@ public class JaxRsApplicationProviderComponent extends ApplicationProvider {
 	}
 
 	public void deactivate(final ComponentContext context) {
+		if (JaxRsDebug.debug) {
+			LOG.debug("JaxRsApplicationProviderComponent de-activation triggered for component '{}' (bundle {})", context.getProperties().get(ComponentConstants.COMPONENT_NAME), context.getBundleContext().getBundle());
+		}
 		bundleContext = null;
 	}
 
 	private String getApplicationProviderId(final ComponentContext context) {
 		final Object applicationProviderIdValue = context.getProperties().get(APPLICATION_PROVIDER_ID);
 
-		if (null == applicationProviderIdValue) // fallback to component name
+		if (null == applicationProviderIdValue) {
 			return (String) context.getProperties().get(ComponentConstants.COMPONENT_NAME);
+		}
 
-		if (!(applicationProviderIdValue instanceof String)) // give up on invalid type
+		if (!(applicationProviderIdValue instanceof String)) {
 			throw new IllegalStateException("The JaxRsApplicationProviderComponent property 'applicationProviderId' must be of type String!");
+		}
 		return (String) applicationProviderIdValue;
 	}
 

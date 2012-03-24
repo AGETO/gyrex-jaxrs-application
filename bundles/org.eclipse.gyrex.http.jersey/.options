@@ -1,0 +1,6 @@
+# global debug option
+org.eclipse.gyrex.http.jersey/debug=true
+
+# resource discovery
+org.eclipse.gyrex.http.jersey/resourceDiscovery=true
+
