@@ -13,14 +13,19 @@ package org.eclipse.gyrex.http.jaxrs;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
 
 import org.eclipse.gyrex.context.IRuntimeContext;
 import org.eclipse.gyrex.http.application.Application;
 import org.eclipse.gyrex.http.application.context.IApplicationContext;
+import org.eclipse.gyrex.http.jaxrs.internal.JaxRsDebug;
 import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.ContextApplicationContextInjectableProvider;
 import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.ContextRuntimeContextInjectableProvider;
 import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.InjectApplicationContextInjectableProvider;
 import org.eclipse.gyrex.http.jaxrs.jersey.spi.inject.InjectRuntimeContextInjectableProvider;
+
+import org.slf4j.LoggerFactory;
 
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.core.DefaultResourceConfig;
@@ -40,6 +45,8 @@ import com.sun.jersey.spi.container.servlet.ServletContainer;
  * </p>
  */
 public class JaxRsApplication extends Application {
+
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(JaxRsApplication.class);
 
 	/**
 	 * Creates a new instance.
@@ -120,6 +127,9 @@ public class JaxRsApplication extends Application {
 			throw new IllegalStateException("no application returned by createJaxRsApplication");
 		}
 
+		// install the SLF4J bridge if necessary
+		installSlf4jBridgeIfNecessary();
+
 		// register
 		getApplicationContext().registerServlet(getJaxRsAlias(), new ServletContainer(jaxRsApplication), null);
 	}
@@ -177,4 +187,30 @@ public class JaxRsApplication extends Application {
 		return Collections.emptySet();
 	}
 
+	private void installSlf4jBridgeIfNecessary() {
+		if (JaxRsDebug.debug) {
+			LOG.debug("Installing SLF4J JUL bridge handler to enable Jersey logging.");
+		}
+		try {
+			final Class<?> bridgeHandlerClass = getClass().getClassLoader().loadClass("org.slf4j.bridge.SLF4JBridgeHandler");
+			if (!Boolean.TRUE.equals(bridgeHandlerClass.getMethod("isInstalled").invoke(null))) {
+				final Logger jerseyLogger = Logger.getLogger("com.sun.jersey");
+				final Handler[] handlers = jerseyLogger.getHandlers();
+				for (final Handler handler : handlers) {
+					// only compare the class name (may be loaded by a different bundle)
+					if (bridgeHandlerClass.getName().equals(handler.getClass().getName())) {
+						if (JaxRsDebug.debug) {
+							LOG.debug("SLF4J JUL bridge handler already installed.");
+						}
+						return;
+					}
+				}
+				jerseyLogger.addHandler((Handler) bridgeHandlerClass.newInstance());
+			}
+		} catch (final Exception e) {
+			if (JaxRsDebug.debug) {
+				LOG.debug("Unable to install SLF4J JUL bridge.", e);
+			}
+		}
+	}
 }
