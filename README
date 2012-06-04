@@ -1,6 +1,14 @@
 JAX-RS application provider for Eclipse Gyrex
 =============================================
 
+************* MOVING to Eclipse.org *******************************
+*                                                                 *
+* This project is in the process of moving to Eclipse.org.        *
+* Please see                                                      *
+*   http://git.eclipse.org/c/gyrex/addons/gyrex-jersey-jaxrs.git/ *
+*                                                                 *
+*******************************************************************
+
 Read about JAX-RS:
   http://en.wikipedia.org/wiki/Java_API_for_RESTful_Web_Services
   
